@@ -1,0 +1,28 @@
+plugins {
+    id 'java'
+}
+
+group = 'io.github.dmitrysulman'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation platform('org.junit:junit-bom:5.14.4')
+    testImplementation platform('org.testcontainers:testcontainers-bom:2.0.5')
+    testImplementation 'org.hibernate.reactive:hibernate-reactive-core:4.4.0.Final'
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testImplementation 'org.testcontainers:testcontainers-mysql'
+    testImplementation 'org.testcontainers:testcontainers-junit-jupiter'
+    testImplementation 'io.vertx:vertx-mysql-client:5.0.12'
+    testImplementation 'tools.jackson.core:jackson-databind:3.1.4'
+
+    testRuntimeOnly 'com.mysql:mysql-connector-j:9.7.0'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+test {
+    useJUnitPlatform()
+}
