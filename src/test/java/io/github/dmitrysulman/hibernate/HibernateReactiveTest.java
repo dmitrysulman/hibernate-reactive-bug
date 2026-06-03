@@ -18,7 +18,7 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @Testcontainers
-public class HibernateReactiveTest {
+class HibernateReactiveTest {
     @Container
     private static final MySQLContainer mysql = new MySQLContainer("mysql:8.4.7");
 
@@ -42,49 +42,51 @@ public class HibernateReactiveTest {
 
     @Test
     void testJsonObjectEntity() {
-        PlainObject jsonObject = new PlainObject(
+        PlainObject object = new PlainObject(
                 "prop1",
                 123L,
                 List.of("s1", "s2"),
                 Map.of("k1", "v2", "k2", Map.of("k3", "v3"), "k4", List.of("v5", "v6"))
         );
-        JsonObjectEntity entity = new JsonObjectEntity(null, jsonObject);
-        sessionFactory.withTransaction(transaction ->
-                transaction
-                        .persist(entity)
-                        .replaceWith(entity)
-        ).await().indefinitely();
-
-        JsonObjectEntity fetched = sessionFactory.withSession(session -> session.find(JsonObjectEntity.class, entity.id))
+        JsonObjectEntity entity = new JsonObjectEntity(null, object);
+        sessionFactory.withTransaction(transaction -> transaction.persist(entity))
                 .await().indefinitely();
 
-        assertEquals(fetched.jsonObject.stringProperty, entity.jsonObject.stringProperty);
-        assertEquals(fetched.jsonObject.longProperty, entity.jsonObject.longProperty);
-        assertEquals(fetched.jsonObject.listProperty, entity.jsonObject.listProperty);
-        assertEquals(fetched.jsonObject.mapProperty, entity.jsonObject.mapProperty);
+        JsonObjectEntity fetched = sessionFactory
+                .withSession(session -> session.find(JsonObjectEntity.class, entity.id))
+                .await().indefinitely();
+
+        assertEquals(object.stringProperty, fetched.jsonObject.stringProperty);
+        assertEquals(object.longProperty, fetched.jsonObject.longProperty);
+        assertEquals(object.listProperty, fetched.jsonObject.listProperty);
+        assertEquals(object.mapProperty, fetched.jsonObject.mapProperty);
     }
 
     @Test
     // Fails
     void testJsonObjectListEntity() {
-        List<PlainObject> jsonObjects = List.of(
+        List<PlainObject> objects = List.of(
                 new PlainObject(
                         "prop1",
                         123L,
                         List.of("s1", "s2"),
                         Map.of("k1", "v2", "k2", Map.of("k3", "v3"), "k4", List.of("v5", "v6"))
+                ),
+                new PlainObject(
+                        "prop2",
+                        456L,
+                        List.of("s3", "s4"),
+                        Map.of("k", "v")
                 )
         );
-        JsonObjectListEntity entity = new JsonObjectListEntity(null, jsonObjects);
-        sessionFactory.withTransaction(transaction ->
-                transaction
-                        .persist(entity)
-                        .replaceWith(entity)
-        ).await().indefinitely();
-
-        JsonObjectListEntity fetched = sessionFactory.withSession(session -> session.find(JsonObjectListEntity.class, entity.id))
+        JsonObjectListEntity entity = new JsonObjectListEntity(null, objects);
+        sessionFactory.withTransaction(transaction -> transaction.persist(entity))
                 .await().indefinitely();
 
-        assertEquals(fetched.jsonList, entity.jsonList);
+        JsonObjectListEntity fetched = sessionFactory
+                .withSession(session -> session.find(JsonObjectListEntity.class, entity.id))
+                .await().indefinitely();
+
+        assertEquals(objects, fetched.jsonList);
     }
 }
