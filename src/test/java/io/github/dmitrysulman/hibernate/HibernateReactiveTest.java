@@ -18,7 +18,7 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @Testcontainers
-public class Tests {
+public class HibernateReactiveTest {
     @Container
     private static final MySQLContainer mysql = new MySQLContainer("mysql:8.4.7");
 
@@ -42,7 +42,7 @@ public class Tests {
 
     @Test
     void testJsonObjectEntity() {
-        JsonObject jsonObject = new JsonObject(
+        PlainObject jsonObject = new PlainObject(
                 "prop1",
                 123L,
                 List.of("s1", "s2"),
@@ -65,9 +65,10 @@ public class Tests {
     }
 
     @Test
+    // Fails
     void testJsonObjectListEntity() {
-        List<JsonObject> jsonObjects = List.of(
-                new JsonObject(
+        List<PlainObject> jsonObjects = List.of(
+                new PlainObject(
                         "prop1",
                         123L,
                         List.of("s1", "s2"),
@@ -84,6 +85,6 @@ public class Tests {
         JsonObjectListEntity fetched = sessionFactory.withSession(session -> session.find(JsonObjectListEntity.class, entity.id))
                 .await().indefinitely();
 
-        assertEquals(fetched.jsonObjects, entity.jsonObjects);
+        assertEquals(fetched.jsonList, entity.jsonList);
     }
 }

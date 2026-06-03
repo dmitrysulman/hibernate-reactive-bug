@@ -9,7 +9,7 @@ public class JsonObjectEntity {
     public JsonObjectEntity() {
     }
 
-    public JsonObjectEntity(Long id, JsonObject jsonObject) {
+    public JsonObjectEntity(Long id, PlainObject jsonObject) {
         this.id = id;
         this.jsonObject = jsonObject;
     }
@@ -20,5 +20,5 @@ public class JsonObjectEntity {
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "json")
-    public JsonObject jsonObject;
+    public PlainObject jsonObject;
 }

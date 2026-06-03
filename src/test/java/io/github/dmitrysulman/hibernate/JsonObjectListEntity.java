@@ -11,9 +11,9 @@ public class JsonObjectListEntity {
     public JsonObjectListEntity() {
     }
 
-    public JsonObjectListEntity(Long id, List<JsonObject> jsonObjects) {
+    public JsonObjectListEntity(Long id, List<PlainObject> jsonList) {
         this.id = id;
-        this.jsonObjects = jsonObjects;
+        this.jsonList = jsonList;
     }
 
     @Id
@@ -23,5 +23,5 @@ public class JsonObjectListEntity {
     @JdbcTypeCode(SqlTypes.JSON) // Fails with io.vertx.core.json.DecodeException: Failed to decode
 //    @JdbcTypeCode(SqlTypes.JSON_ARRAY) // Fails with java.lang.NullPointerException: Cannot invoke "org.hibernate.metamodel.mapping.MappingType.getClass()" because "mappedType" is null
     @Column(columnDefinition = "json")
-    public List<JsonObject> jsonObjects;
+    public List<PlainObject> jsonList;
 }
