@@ -1,9 +1,11 @@
 package io.github.dmitrysulman.hibernate;
 
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
 import org.hibernate.boot.registry.StandardServiceRegistry;
+import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Configuration;
-import org.hibernate.reactive.mutiny.Mutiny;
-import org.hibernate.reactive.provider.ReactiveServiceRegistryBuilder;
 import org.hibernate.reactive.provider.Settings;
 import org.hibernate.tool.schema.Action;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,11 +21,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertIterableEquals;
 
 @Testcontainers
-class HibernateReactiveTest {
+class HibernateClassicTest {
     @Container
     private static final MySQLContainer mysql = new MySQLContainer("mysql:8.4.7");
 
-    private Mutiny.SessionFactory sessionFactory;
+    private SessionFactory sessionFactory;
 
     @BeforeEach
     void init() {
@@ -34,11 +36,11 @@ class HibernateReactiveTest {
         configuration.setProperty(Settings.JAKARTA_JDBC_PASSWORD, mysql.getPassword());
         configuration.addAnnotatedClasses(JsonObjectEntity.class, JsonObjectListEntity.class);
 
-        StandardServiceRegistry registry = new ReactiveServiceRegistryBuilder()
+        StandardServiceRegistry registry = new StandardServiceRegistryBuilder()
                 .applySettings(configuration.getProperties())
                 .build();
 
-        sessionFactory = configuration.buildSessionFactory(registry).unwrap(Mutiny.SessionFactory.class);
+        sessionFactory = configuration.buildSessionFactory(registry);
     }
 
     @Test
@@ -50,18 +52,19 @@ class HibernateReactiveTest {
                 Map.of("k1", "v2", "k2", Map.of("k3", "v3"), "k4", List.of("v5", "v6"))
         );
         JsonObjectEntity entity = new JsonObjectEntity(null, object);
-        sessionFactory.withTransaction(transaction -> transaction.persist(entity))
-                .await().indefinitely();
+        try (Session session = sessionFactory.createEntityManager()) {
+            Transaction transaction = session.beginTransaction();
+            session.persist(entity);
+            transaction.commit();
+        }
 
-        JsonObjectEntity fetched = sessionFactory
-                .withSession(session -> session.find(JsonObjectEntity.class, entity.id))
-                .await().indefinitely();
-
-        assertEquals(object, fetched.jsonObject);
+        try (Session Session = sessionFactory.createEntityManager()) {
+            JsonObjectEntity fetched = Session.find(JsonObjectEntity.class, entity.id);
+            assertEquals(object, fetched.jsonObject);
+        }
     }
 
     @Test
-    // Fails wuth io.vertx.core.json.DecodeException: Failed to decode
     void testJsonObjectListEntity() {
         List<PlainObject> objects = List.of(
                 new PlainObject(
@@ -78,13 +81,15 @@ class HibernateReactiveTest {
                 )
         );
         JsonObjectListEntity entity = new JsonObjectListEntity(null, objects);
-        sessionFactory.withTransaction(transaction -> transaction.persist(entity))
-                .await().indefinitely();
+        try (Session session = sessionFactory.createEntityManager()) {
+            Transaction transaction = session.beginTransaction();
+            session.persist(entity);
+            transaction.commit();
+        }
 
-        JsonObjectListEntity fetched = sessionFactory
-                .withSession(session -> session.find(JsonObjectListEntity.class, entity.id))
-                .await().indefinitely();
-
-        assertIterableEquals(objects, fetched.jsonList);
+        try (Session session = sessionFactory.createEntityManager()) {
+            JsonObjectListEntity fetched = session.find(JsonObjectListEntity.class, entity.id);
+            assertIterableEquals(objects, fetched.jsonList);
+        }
     }
 }

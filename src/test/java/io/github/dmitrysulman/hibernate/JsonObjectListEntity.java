@@ -20,8 +20,9 @@ public class JsonObjectListEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     public Long id;
 
-    @JdbcTypeCode(SqlTypes.JSON) // Fails with io.vertx.core.json.DecodeException: Failed to decode
-//    @JdbcTypeCode(SqlTypes.JSON_ARRAY) // Fails with java.lang.NullPointerException: Cannot invoke "org.hibernate.metamodel.mapping.MappingType.getClass()" because "mappedType" is null
+    // Works on classic Hibernate
+    // Fails on Hibernate Reactive with io.vertx.core.json.DecodeException: Failed to decode
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "json")
     public List<PlainObject> jsonList;
 }
