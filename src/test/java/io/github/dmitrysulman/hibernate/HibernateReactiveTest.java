@@ -61,7 +61,7 @@ class HibernateReactiveTest {
     }
 
     @Test
-    // Fails wuth io.vertx.core.json.DecodeException: Failed to decode
+    // Fails with io.vertx.core.json.DecodeException: Failed to decode
     void testJsonObjectListEntity() {
         List<PlainObject> objects = List.of(
                 new PlainObject(
